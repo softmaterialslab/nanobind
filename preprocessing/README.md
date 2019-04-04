@@ -17,18 +17,18 @@ This is the lammps script to be run
 ## Running the preprocessor
 
 * First, git clone the project:
-```git clone https://github.com/softmaterialslab/nanobind.git '''
+'''git clone https://github.com/softmaterialslab/nanobind.git '''
 
 * Then, load the required modules using following command:
-```module load gsl && module load boost/1_67_0'''
+'''module load gsl && module load boost/1_67_0'''
 
 * Install the project:
-```make cluster-install```
+'''make cluster-install'''
 
 * Run the project:
 ''' ./generate_lammps_script'''
 
 * If you want to clean everything and create a new build, use:
-```make clean```
+'''make clean'''
 
 
