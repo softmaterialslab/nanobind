@@ -133,35 +133,35 @@ int main() {
    
    ////////////////////////////...To start on a lattice, use these lines.../////////////////////////////////////////
    
-   unsigned int fillNumber = int(ceil(pow((double(numberComplexes)), 1.0 / 3.0)));
-   
-   
-   for (unsigned int i = 0; i < fillNumber; i++) 
-   {
-      for (unsigned int j = 0; j < fillNumber; j++) 
-      {
-         for (unsigned int k = 0; k < fillNumber; k++) 
-         {
-            if ( vlpXYZ.size() < numberComplexes ) 
-            {
-               index += 1;
-               vlpX = (((double)i*boxLength*(1/(double)fillNumber)));
-               vlpY = (((double)j*boxLength*(1/(double)fillNumber)));
-               vlpZ = (((double)k*(boxLength - (vlpDiameter*2.5/2)-(ligandDiameter))*(1/(double)fillNumber))) + (vlpDiameter*2.5)+(ligandDiameter);
-               datafile << index << " 1 " << "1" << "  " << vlpX << "  " << vlpY << "  " << vlpZ << endl;
-               vlpXYZ.push_back(VECTOR3D(vlpX, vlpY, vlpX));
-               for (unsigned int m = 0; m < ligandCoordinates.size(); m++)
-               {
-                  index += 1;
-                  x = vlpX + ligandCoordinates[m].x;
-                  y = vlpY + ligandCoordinates[m].y;
-                  z = vlpZ + ligandCoordinates[m].z;
-                  datafile << index << " 1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
-               }
-            }
-         }
-      }
-   }
+//    unsigned int fillNumber = int(ceil(pow((double(numberComplexes)), 1.0 / 3.0)));
+//    
+//    
+//    for (unsigned int i = 0; i < fillNumber; i++) 
+//    {
+//       for (unsigned int j = 0; j < fillNumber; j++) 
+//       {
+//          for (unsigned int k = 0; k < fillNumber; k++) 
+//          {
+//             if ( vlpXYZ.size() < numberComplexes ) 
+//             {
+//                index += 1;
+//                vlpX = (((double)i*boxLength*(1/(double)fillNumber)));
+//                vlpY = (((double)j*boxLength*(1/(double)fillNumber)));
+//                vlpZ = (((double)k*(boxLength - (vlpDiameter*2.5/2)-(ligandDiameter))*(1/(double)fillNumber))) + (vlpDiameter*2.5)+(ligandDiameter);
+//                datafile << index << " 1 " << "1" << "  " << vlpX << "  " << vlpY << "  " << vlpZ << endl;
+//                vlpXYZ.push_back(VECTOR3D(vlpX, vlpY, vlpX));
+//                for (unsigned int m = 0; m < ligandCoordinates.size(); m++)
+//                {
+//                   index += 1;
+//                   x = vlpX + ligandCoordinates[m].x;
+//                   y = vlpY + ligandCoordinates[m].y;
+//                   z = vlpZ + ligandCoordinates[m].z;
+//                   datafile << index << " 1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
+//                }
+//             }
+//          }
+//       }
+//    }
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
    
    
@@ -377,15 +377,15 @@ outfile << "bond_coeff 3    1000.0  " << lengthType3 << endl << endl;
 
 outfile << "## Ensemble Fixes (+ for output) ##" << endl;
 
-outfile << "variable        myTStep equal   0.0001 # timestep where 1 MD step is " << sigma * sqrt( (massSI) / (epsilonSI) )  << " seconds" << endl;
+outfile << "variable        myTStep equal   0.00005 # timestep where 1 MD step is " << sigma * sqrt( (massSI) / (epsilonSI) )  << " seconds" << endl;
 
 outfile << "timestep        ${myTStep}" << endl;
 
 outfile << "variable        myDStep equal   1000" << endl << endl;
 
-outfile << "fix     ens     vlp     nvt     temp    1.      1.      0.01" << endl;
+outfile << "fix     ens     vlp     nvt     temp    1.      1.      0.005" << endl;
 
-outfile << "fix     ens2    ligand  nvt     temp    1.      1.      0.01  # T_start, T_stop, T_damp=100*timestep" << endl;
+outfile << "fix     ens2    ligand  nvt     temp    1.      1.      0.005  # T_start, T_stop, T_damp=100*timestep" << endl;
 
 outfile << "fix_modify ens energy yes  # adds thermostat energy to potential" << endl;
 
