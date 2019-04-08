@@ -17,384 +17,413 @@ using namespace std;
 
 
 int main() {
-  
-  // Set up the ligand xyz coordinates in a vector array
-  
-  vector<VECTOR3D> ligand_xyz;
-  double x,y,z;
-  
-  ifstream crds;                                      //open coordinates file
-    crds.open("ligand_xyz.coords");
-    if (!crds) {                                        //check to make sure file is there
-        cerr << "ERR: FILE ligand_xyz.coords NOT OPENED. Check directory and/or filename.";
-        exit(1);
-    }
-    for (int i = 0; i < 60; i++){
+   
+   // Set up the ligand xyz coordinates in a vector array
+   
+   vector<VECTOR3D> ligandCoordinates;
+   double x;
+   double y;
+   double z;
+   
+   ifstream crds;                                      //open coordinates file
+   crds.open("ligandCoordinates.coords");
+   if (!crds) 
+   {                                        //check to make sure file is there
+      cerr << "ERR: FILE ligandCoordinates.coords NOT OPENED. Check directory and/or filename.";
+      exit(1);
+   }
+   for (int i = 0; i < 60; i++)
+   {
       crds >> x >> y >> z;				// Add coordinates the the vector array
-      ligand_xyz.push_back(VECTOR3D(x,y,z));
-    }
-    
-  
-  // Get important parameters from the user
-  
-  double epsilon, wall_dist, nano_conc;
-  int num_particles;
-  
-  cout << "What is the [ligand - Virus] complex concentration (nM)?" << endl;
-  cin >> nano_conc;
-  
-  cout << "What is the receptor spacing (nm)?" << endl;
-  cin >> wall_dist;
-  
-  cout << "What is the binding strength of the ligand-receptor interaction (KbT)?" << endl;
-  cin >> epsilon;
-  
-  cout << "How many particles?" << endl;
-  cin >> num_particles;
-  
-						//add options for ligand - virus ratio, properties of ligand / vlp, free ligand in solution
-  
-  // GENERATE P22CD40L.in FILE!!!
-  
-  // generate atoms
-  
-  ofstream datafile("P22CD40L.in");
-  
-  datafile << "#Script for P22-CD40L complex. To be read into LAMMPS template. " << endl;
-  
-  datafile << "#LAMMPS  data    file " << endl;
-  
-  double vlp_diameter = 1; //reduced units
-  double ligand_diameter = 0.1; //reduced units
-  double wall_diameter = 0.1; //reduced units
-  
-  double box_x, num_wall_x, num_atoms, num_bonds;
-  box_x = pow ( (num_particles * 0.001 / (6.022E23))/(nano_conc * 1E-9) , (1.0/3.0) ); //in meters
-  
-   wall_dist = wall_dist * 1E-9; // in meters
-  num_wall_x = box_x / wall_dist; //calculate number of mesh points
-  num_wall_x = trunc(num_wall_x); // truncate this value
-  cout << "adjusted spacing is " << (box_x/num_wall_x)*1E9 << " nm" << endl; //this is the adjusted spacing
-  num_atoms = (num_particles * 61) + (num_wall_x * num_wall_x);
-  num_bonds = num_particles * 180;
-  
-  double sigma = 60e-9; //sigma value currently used, diameter of P22
-  double sigma_hc = 0.12; // sigma hc in reduced units
-  double mass_SI = 3.819E-14; // mass of P22 in kg
-  double epsilon_SI = (1.38E-23) * (298.15); // epsilon in J
-  box_x = box_x / sigma; // now in reduced units
-  wall_dist = box_x / num_wall_x; // now in reduced units
-  
-   if (box_x < (10 * vlp_diameter)){
-    cout << "Uh oh! The z-direction is too small!" << endl;
-  }
-  
-  
-  datafile << num_atoms << " atoms" << endl;
-  
-  datafile << num_bonds << " bonds" << endl;
-  
-  datafile << "3 atom types" << endl;
-  
-  datafile << "3 bond types" << endl;
-  
-  datafile << "0" << " " << box_x << " xlo xhi" << endl; // in reduced units...
-  
-  datafile << "0" << " " << box_x << " ylo yhi" << endl;
-  
-  datafile << "0" << " " << box_x << " zlo zhi" << endl;
-  
-  datafile << endl;
-  
-  //atoms section
-  
-  datafile << "Atoms" << endl << endl;
-  
-  double atom_type, x_vlp, y_vlp, z_vlp;
-  double index = 0;
-  vector<VECTOR3D> vlp_xyz;
-  gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);                    //setting up random seed
-  //unsigned long int Seed = 23410982;
-  gsl_rng_set(r, time(NULL));		//seed with time
-  VECTOR3D dist;
-  
-  
-    
+      ligandCoordinates.push_back(VECTOR3D(x,y,z));
+   }
+   
+   
+   // Get important parameters from the user
+   
+   double epsilon, wallSpacing, concentration;
+   int numberComplexes;
+   
+   cout << "What is the [ligand - Virus] complex concentration (nM)?" << endl;
+   cin >> concentration;
+   
+   cout << "What is the receptor spacing (nm)?" << endl;
+   cin >> wallSpacing;
+   
+   cout << "What is the binding strength of the ligand-receptor interaction (KbT)?" << endl;
+   cin >> epsilon;
+   
+   cout << "How many vlp-ligand complexes?" << endl;
+   cin >> numberComplexes;
+   
+   //add options for ligand - virus ratio, properties of ligand / vlp, free ligand in solution
+   
+   // GENERATE P22CD40L.in FILE!!!
+   
+   // generate atoms
+   
+   ofstream datafile("P22CD40L.in");
+   
+   datafile << "#Script for P22-CD40L complex. To be read into LAMMPS template. " << endl;
+   
+   datafile << "#LAMMPS  data    file " << endl;
+   
+   double vlpDiameter = 1; //reduced units
+   double ligandDiameter = 0.1; //reduced units
+   double wallDiameter = 0.1; //reduced units
+   
+   double boxLength;
+   double wallNumberX; //number of wall particles in x direction
+   double atomNumber;
+   double bondNumber;
+   boxLength = pow ( (numberComplexes * 0.001 / (6.022E23))/(concentration * 1E-9) , (1.0/3.0) ); //in meters
+   
+   wallSpacing = wallSpacing * 1E-9; // in meters
+   wallNumberX = boxLength / wallSpacing; //calculate number of mesh points
+   wallNumberX = trunc(wallNumberX); // truncate this value
+   cout << "adjusted spacing is " << (boxLength/wallNumberX)*1E9 << " nm" << endl; //this is the adjusted spacing
+   atomNumber = (numberComplexes * 61) + (wallNumberX * wallNumberX);
+   bondNumber = numberComplexes * 180;
+   
+   double sigma = 60e-9; //sigma value currently used, diameter of P22
+   double sigmaHC = 0.12; // sigma hc in reduced units
+   double massSI = 3.819E-14; // mass of P22 in kg
+   double epsilonSI = (1.38E-23) * (298.15); // epsilon in J
+   boxLength = boxLength / sigma; // now in reduced units
+   wallSpacing = boxLength / wallNumberX; // now in reduced units
+   
+   if (boxLength < (10 * vlpDiameter))
+   {
+      cout << "Uh oh! The z-direction is too small!" << endl;
+   }
+   
+   
+   datafile << atomNumber << " atoms" << endl;
+   
+   datafile << bondNumber << " bonds" << endl;
+   
+   datafile << "3 atom types" << endl;
+   
+   datafile << "3 bond types" << endl;
+   
+   datafile << "0" << " " << boxLength << " xlo xhi" << endl; // in reduced units...
+   
+   datafile << "0" << " " << boxLength << " ylo yhi" << endl;
+   
+   datafile << "0" << " " << boxLength << " zlo zhi" << endl;
+   
+   datafile << endl;
+   
+   //atoms section
+   
+   datafile << "Atoms" << endl << endl;
+   
+   double atomType;
+   double vlpX;
+   double vlpY;
+   double vlpZ;
+   double index = 0;
+   vector<VECTOR3D> vlpXYZ;
+   gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);                    //setting up random seed
+   //unsigned long int Seed = 23410982;
+   gsl_rng_set(r, time(NULL));		//seed with time
+   VECTOR3D dist;
+   
+   
+   
    ////////////////////////////...To start on a lattice, use these lines.../////////////////////////////////////////
-  
-//   unsigned int num_fill = int(ceil(pow((double(num_particles)), 1.0 / 3.0)));
-//   
-//   
-//     for (unsigned int i = 0; i < num_fill; i++) {
-//       for (unsigned int j = 0; j < num_fill; j++) {
-// 	for (unsigned int k = 0; k < num_fill; k++) {
-// 	  if ( vlp_xyz.size() < num_particles ) {
-// 	    index += 1;
-// 	    x_vlp = (((double)i*box_x*(1/(double)num_fill)));
-// 	    y_vlp = (((double)j*box_x*(1/(double)num_fill)));
-// 	    z_vlp = (((double)k*(box_x - (vlp_diameter*2.5/2)-(ligand_diameter))*(1/(double)num_fill))) + (vlp_diameter*2.5)+(ligand_diameter);
-// 	    datafile << index << " 1 " << "1" << "  " << x_vlp << "  " << y_vlp << "  " << z_vlp << endl;
-// 	    vlp_xyz.push_back(VECTOR3D(x_vlp, y_vlp, x_vlp));
-// 	    for (unsigned int m = 0; m < ligand_xyz.size(); m++){
-// 	      index += 1;
-// 	      x = x_vlp + ligand_xyz[m].x;
-// 	      y = y_vlp + ligand_xyz[m].y;
-// 	      z = z_vlp + ligand_xyz[m].z;
-// 	      datafile << index << " 1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
-// 	    }
-// 	  }
-// 	}
-//       }
-//     }
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-  
-  ///////////////////////////////...To give vlp random positions use these...////////////////////////////////
-  bool add;
-  
-  while (vlp_xyz.size() < num_particles) {
-    add = true;
-    x_vlp = (gsl_rng_uniform(r)) * box_x; // guess some coordinates
-    y_vlp = (gsl_rng_uniform(r)) * box_x;
-    z_vlp = (gsl_rng_uniform(r)) * box_x;
-    
-    if (z_vlp < 2.5) add = false; // if too close to the cell wall, reject the point
-    if (z_vlp > (box_x - (vlp_diameter + ligand_diameter) ) ) add = false; // if overlaps with the upper z boundary reject
-    
-    
-    if (vlp_xyz.size() == 0) {		//if no vlps have been added yet, add it
-      vlp_xyz.push_back(VECTOR3D(x_vlp, y_vlp, x_vlp));
-      index += 1;
-      datafile << index << " 1 " << "1" << " " << x_vlp << " " << y_vlp << " " << z_vlp << " " << endl;
-      for (unsigned int m = 0; m < ligand_xyz.size(); m++){
-	index += 1;
-	x = x_vlp + ligand_xyz[m].x;
-	y = y_vlp + ligand_xyz[m].y;
-	z = z_vlp + ligand_xyz[m].z;
-	datafile << index << " 1 " << "2" << " " << x << " " << y << " " << z << " " << endl;
+   
+   unsigned int fillNumber = int(ceil(pow((double(numberComplexes)), 1.0 / 3.0)));
+   
+   
+   for (unsigned int i = 0; i < fillNumber; i++) 
+   {
+      for (unsigned int j = 0; j < fillNumber; j++) 
+      {
+         for (unsigned int k = 0; k < fillNumber; k++) 
+         {
+            if ( vlpXYZ.size() < numberComplexes ) 
+            {
+               index += 1;
+               vlpX = (((double)i*boxLength*(1/(double)fillNumber)));
+               vlpY = (((double)j*boxLength*(1/(double)fillNumber)));
+               vlpZ = (((double)k*(boxLength - (vlpDiameter*2.5/2)-(ligandDiameter))*(1/(double)fillNumber))) + (vlpDiameter*2.5)+(ligandDiameter);
+               datafile << index << " 1 " << "1" << "  " << vlpX << "  " << vlpY << "  " << vlpZ << endl;
+               vlpXYZ.push_back(VECTOR3D(vlpX, vlpY, vlpX));
+               for (unsigned int m = 0; m < ligandCoordinates.size(); m++)
+               {
+                  index += 1;
+                  x = vlpX + ligandCoordinates[m].x;
+                  y = vlpY + ligandCoordinates[m].y;
+                  z = vlpZ + ligandCoordinates[m].z;
+                  datafile << index << " 1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
+               }
+            }
+         }
       }
-      add = false;
-    } 
-    
-    for (int j = 0; j < vlp_xyz.size(); j++){ //make sure they don't overlap with other particles
-      dist.x = vlp_xyz[j].x - x_vlp;
-      dist.y = vlp_xyz[j].y - y_vlp;
-      dist.z = vlp_xyz[j].z - z_vlp;
-      if (dist.x>box_x/2) dist.x -= box_x; //account for periodic boundaries in x & y  
-      if (dist.x<-box_x/2) dist.x += box_x;
-      if (dist.y>box_x/2) dist.y -= box_x;
-      if (dist.y<-box_x/2) dist.y += box_x;
-      //       if (dist.z>box_x/2) dist.z -= box_x; 	// z is not periodic
-      //       if (dist.z<-box_x/2) dist.z += box_x;
-      //   cout << "distance is " << dist.GetMagnitude() << " btw " << j << " ( " << vlp_xyz[j].x << " , " << vlp_xyz[j].y << " , " << vlp_xyz[j].z << " ) " << " and " << index/61 << " ( " << x_vlp << " , " << y_vlp << " , " << z_vlp << " ) " << endl;
+   }
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+   
+   
+   ///////////////////////////////...To give vlp random positions use these...////////////////////////////////
+   bool add;
+   
+   while (vlpXYZ.size() < numberComplexes) 
+   {
+      add = true;
+      vlpX = (gsl_rng_uniform(r)) * boxLength; // guess some coordinates
+      vlpY = (gsl_rng_uniform(r)) * boxLength;
+      vlpZ = (gsl_rng_uniform(r)) * boxLength;
       
-      if (dist.GetMagnitude() < 2.5) {  //flag it if it intersects with anything
-	//cout << "too close!" << endl;
-	add = false;
-	break;
-    }  
-  }
-  
-  
-  if (add == true){		//if it doesn't intersect, add it and its ligands to the list
-    vlp_xyz.push_back(VECTOR3D(x_vlp, y_vlp, z_vlp));
-    index += 1;
-    datafile << index << "  1 " << "1" << "  " << x_vlp << "  " << y_vlp << "  " << z_vlp << endl;
-    for (unsigned int m = 0; m < ligand_xyz.size(); m++){
-      index += 1;
-      x = x_vlp + ligand_xyz[m].x;
-      y = y_vlp + ligand_xyz[m].y;
-      z = z_vlp + ligand_xyz[m].z;
-      datafile << index << "  1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
-    }
-  } //else cout << "rejected!" << endl;
-  
+      if (vlpZ < 2.5) add = false; // if too close to the cell wall, reject the point
+      if (vlpZ > (boxLength - (vlpDiameter + ligandDiameter) ) ) add = false; // if overlaps with the upper z boundary reject
+      
+      
+      if (vlpXYZ.size() == 0) 
+      {		//if no vlps have been added yet, add it
+         vlpXYZ.push_back(VECTOR3D(vlpX, vlpY, vlpX));
+         index += 1;
+         datafile << index << " 1 " << "1" << " " << vlpX << " " << vlpY << " " << vlpZ << " " << endl;
+         for (unsigned int m = 0; m < ligandCoordinates.size(); m++)
+         {
+            index += 1;
+            x = vlpX + ligandCoordinates[m].x;
+            y = vlpY + ligandCoordinates[m].y;
+            z = vlpZ + ligandCoordinates[m].z;
+            datafile << index << " 1 " << "2" << " " << x << " " << y << " " << z << " " << endl;
+         }
+         add = false;
+      } 
+      
+      for (int j = 0; j < vlpXYZ.size(); j++)
+      { //make sure they don't overlap with other particles
+         dist.x = vlpXYZ[j].x - vlpX;
+         dist.y = vlpXYZ[j].y - vlpY;
+         dist.z = vlpXYZ[j].z - vlpZ;
+         if (dist.x>boxLength/2) dist.x -= boxLength; //account for periodic boundaries in x & y  
+         if (dist.x<-boxLength/2) dist.x += boxLength;
+         if (dist.y>boxLength/2) dist.y -= boxLength;
+         if (dist.y<-boxLength/2) dist.y += boxLength;
+         //       if (dist.z>boxLength/2) dist.z -= boxLength; 	// z is not periodic
+         //       if (dist.z<-boxLength/2) dist.z += boxLength;
+         //   cout << "distance is " << dist.GetMagnitude() << " btw " << j << " ( " << vlpXYZ[j].x << " , " << vlpXYZ[j].y << " , " << vlpXYZ[j].z << " ) " << " and " << index/61 << " ( " << vlpX << " , " << vlpY << " , " << vlpZ << " ) " << endl;
+         
+         if (dist.GetMagnitude() < 2.5) 
+         {  //flag it if it intersects with anything
+            //cout << "too close!" << endl;
+            add = false;
+            break;
+         }  
+      }
+      
+      
+      if (add == true)
+      {		//if it doesn't intersect, add it and its ligands to the list
+         vlpXYZ.push_back(VECTOR3D(vlpX, vlpY, vlpZ));
+         index += 1;
+         datafile << index << "  1 " << "1" << "  " << vlpX << "  " << vlpY << "  " << vlpZ << endl;
+         for (unsigned int m = 0; m < ligandCoordinates.size(); m++)
+         {
+            index += 1;
+            x = vlpX + ligandCoordinates[m].x;
+            y = vlpY + ligandCoordinates[m].y;
+            z = vlpZ + ligandCoordinates[m].z;
+            datafile << index << "  1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
+         }
+   } //else cout << "rejected!" << endl;
+   
 }
 
-    
- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
-    
-    //Making wall particles
-    for (unsigned int i = 0; i < num_wall_x; i++){
-      for (unsigned int j = 0; j < num_wall_x; j++){
-	index += 1;
-	datafile << index << " 1 " << "3" << "  " << i * wall_dist << "  " << j * wall_dist << "  " << "0" << endl;
-      }
-    }
-    
-    cout << "Done making atoms!" << endl;
-    
-    // Generate bonds
-      
-    vector<VECTOR3D> ligand_bond;
-    int type, b1, b2;
-    
-      ifstream bonds;                                      //open coordinates file
-    bonds.open("ligand_bond.coords");
-    if (!bonds) {                                        //check to make sure file is there
-        cerr << "ERR: FILE ligand_bond.coords NOT OPENED. Check directory and/or filename.";
-        exit(1);
-    }
-    for (int i = 0; i < 180; i++){
-      bonds >> index >> type >> b1 >> b2;				// Add coordinates the the vector array
-      ligand_bond.push_back(VECTOR3D(type,b1,b2));
-    }
 
-    datafile << endl << "Bonds" << endl << endl;
-    
-     index = 0;
-    
-    for (int i = 0; i < num_particles; i++){
-      for (int j = 0; j < ligand_bond.size(); j++){
-	index += 1;	
-	datafile << index <<  "     " << ligand_bond[j].x <<  "     " << ligand_bond[j].y + (i * 61) << "     " << ligand_bond[j].z + (i * 61) << endl;	
-      }
-      
-    }
-    
-    //bond type 1 length
-    dist = VECTOR3D(0,0,0) - ligand_xyz[0];
-    double type1_length = dist.GetMagnitude();
-    //bond type 2 length
-    dist = ligand_xyz[0] - ligand_xyz[1];
-    double type2_length = dist.GetMagnitude();
-    //bond type 3 length
-    dist = ligand_xyz[0] - ligand_xyz[20];
-    double type3_length = dist.GetMagnitude();
-    
-    
-    cout << "Done making bonds!" << endl;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
 
-  
-  
-  
-  
-  
+//Making wall particles
+for (unsigned int i = 0; i < wallNumberX; i++)
+{
+   for (unsigned int j = 0; j < wallNumberX; j++)
+   {
+      index += 1;
+      datafile << index << " 1 " << "3" << "  " << i * wallSpacing << "  " << j * wallSpacing << "  " << "0" << endl;
+   }
+}
 
-  
-  
-  
-  
-  
-  
-  
-  //GENERATE LAMMPS INPUT SCRIPT
-	
-  ofstream outfile("lammps_script.in");
-  
-  outfile << "#Lammps input script for nanoparticle binding with multivalency #" << endl << endl;
-  
-  outfile << "units lj" << endl << "boundary p p f" << endl << "atom_style bond " << endl << "neighbor 0.3 bin" << endl << "neigh_modify every 1 delay 0 check yes" << endl << endl;
-  
-  //Creating simulation box
-  
-  outfile << "## Create Simulation Box, Atoms ##" << endl;
-  
-  outfile << "read_data	   P22CD40L.in" << endl << endl;
-  
-  outfile << "group vlp type 1" << endl << "group ligand type 2" << endl << "group wall type 3" << endl << endl;
-  
-  //Defining particle properties
-  
-  outfile << "## Defining Particle/Medium Properties ##" << endl;
-  
-  outfile << "mass	1	1	# reduced mass of vlp P22" << endl;
-  
-  outfile << "mass	2	0.002	# reduced mass of ligand " << endl;
-  
-  outfile << "mass	3	1	# mass of wall, irrelevant " << endl << endl;
-  
-  outfile << "## Ascribing Initial Velocities ##" << endl;
-  
-  outfile << "velocity	all	create	1.0	4928459	rot	yes	dist	gaussian	units	box" << endl << endl;
-  
-  outfile << "## Fixing Wall particles ##" << endl;
-  
-  outfile << "fix zwalls all wall/reflect zhi EDGE zlo EDGE" << endl << endl;
-  
-  //Interparticle potentials
-  
-  outfile << "## Ascribing interparticle potentials: ##" << endl << endl;	
-  
-  outfile << "pair_style      hybrid lj/expand        2.5     lj/cut 2.5" << endl;
-  
-  outfile << "pair_coeff      1       1       lj/cut           1      " << vlp_diameter << "	" << vlp_diameter*1.12246   << "       # epsilon, sigma, cut-off  V-V" << endl;
-  
-  outfile << "pair_coeff      1       2       lj/expand        1      " << sigma_hc << "     " << (vlp_diameter + ligand_diameter)/2 - sigma_hc << "	" << (vlp_diameter + ligand_diameter)/2 * 1.12246 << "  # epsilon, sigma_hc, delta_V-L, cut-off" << endl;
-  
-  outfile << "pair_coeff      2       2       lj/cut           1      " << ligand_diameter << "     " << ligand_diameter*1.12246 << "       # L-L" << endl;
-  
-  outfile << "pair_coeff      1       3       lj/expand        1      " << sigma_hc << "     " << (vlp_diameter + wall_diameter)/2 - sigma_hc << "	" << (vlp_diameter + wall_diameter)/2 * 1.12246 << "  # V-W" << endl;
-  
-  outfile << "pair_coeff      2       3       lj/cut       " << epsilon << "	   " << ligand_diameter << "	" << "2.5" << "  # L-W" << endl;
-  
-  outfile << "pair_coeff      3       3       lj/cut           0      0               # W-W" << endl << endl;
-  
-  outfile << "#pair_modify  shift   yes     # the additive e_LJ for repulsion-only" << endl << endl;
-  
-  //Defining bond properties
-  
-  outfile << "## Making bonds ##" << endl;
-  
-  outfile << "bond_style harmonic" << endl;
-  
-  outfile << "bond_coeff 1    1000.0  " << type1_length << "  # type, K, distance" << endl;
-  
-  outfile << "bond_coeff 2    1000.0  " << type2_length << endl;
-  
-  outfile << "bond_coeff 3    1000.0  " << type3_length << endl << endl;
-  
-  //Ensemble fixes
-  
-  outfile << "## Ensemble Fixes (+ for output) ##" << endl;
-  
-  outfile << "variable        myTStep equal   0.0001 # timestep where 1 MD step is " << sigma * sqrt( (mass_SI) / (epsilon_SI) )  << " seconds" << endl;
-  
-  outfile << "timestep        ${myTStep}" << endl;
-  
-  outfile << "variable        myDStep equal   1000" << endl << endl;
-  
-  outfile << "fix     ens     vlp     nvt     temp    1.      1.      0.01" << endl;
-  
-  outfile << "fix     ens2    ligand  nvt     temp    1.      1.      0.01  # T_start, T_stop, T_damp=100*timestep" << endl;
-  
-  outfile << "fix_modify ens energy yes  # adds thermostat energy to potential" << endl;
-  
-  outfile << "fix_modify ens2 energy yes" << endl << endl;
-  
-  //Output dump
-  
-  outfile << "## Initial Image Dump ##" << endl;
-  
-  outfile << "dump mymovie all custom 100 ovitomovie.melt id type x y z" << endl << endl;
-  
-  outfile << "print \"OUTPUT COLUMNS: SIMULATION STEP NUMBER | TEMPERATURE | NP POTENTIAL ENERGY | SYSTEM VOLUME\" " << endl << endl;
-  
-  outfile << "thermo_style   custom  step    temp   etotal  ke      pe     #print info to file" << endl;
-  
-  outfile << "thermo  50000" << endl << endl;
-  
-  outfile << "run     1500000" << endl << endl;
-  
-  outfile << "## Defining Output Information ##" << endl;
-  
-  outfile << "dump    posD    all     custom  ${myDStep}      outfiles/dump.melt      id      type    x       y       z       # c_atomPot     c_atomKin" << endl << endl;
-  
-  outfile << " unfix   ens" << endl;
-  
-  outfile << "unfix   ens2" << endl;
-  
-  outfile << "undump  posD" << endl;
-  
-  outfile << "undump mymovie" << endl;
-  
-  outfile << "#shell          echo \"Lammps Simulation Ended\" " << endl;
-  
-  
-  gsl_rng_free (r);
-  
-	return 0 ;
-			
+cout << "Done making atoms!" << endl;
+
+// Generate bonds
+
+vector<VECTOR3D> ligandBonds;
+int type;
+int b1;
+int b2;
+
+ifstream bonds;                                      //open coordinates file
+bonds.open("ligandBonds.coords");
+if (!bonds) {                                        //check to make sure file is there
+   cerr << "ERR: FILE ligandBonds.coords NOT OPENED. Check directory and/or filename.";
+   exit(1);
+}
+for (int i = 0; i < 180; i++){
+   bonds >> index >> type >> b1 >> b2;				// Add coordinates the the vector array
+   ligandBonds.push_back(VECTOR3D(type,b1,b2));
+}
+
+datafile << endl << "Bonds" << endl << endl;
+
+index = 0;
+
+for (int i = 0; i < numberComplexes; i++)
+{
+   for (int j = 0; j < ligandBonds.size(); j++)
+   {
+      index += 1;	
+      datafile << index <<  "     " << ligandBonds[j].x <<  "     " << ligandBonds[j].y + (i * 61) << "     " << ligandBonds[j].z + (i * 61) << endl;	
+   }
+   
+}
+
+//bond type 1 length
+dist = VECTOR3D(0,0,0) - ligandCoordinates[0];
+double lengthType1 = dist.GetMagnitude();
+//bond type 2 length
+dist = ligandCoordinates[0] - ligandCoordinates[1];
+double lengthType2 = dist.GetMagnitude();
+//bond type 3 length
+dist = ligandCoordinates[0] - ligandCoordinates[20];
+double lengthType3 = dist.GetMagnitude();
+
+
+cout << "Done making bonds!" << endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//GENERATE LAMMPS INPUT SCRIPT
+
+ofstream outfile("lammps_script.in");
+
+outfile << "#Lammps input script for nanoparticle binding with multivalency #" << endl << endl;
+
+outfile << "units lj" << endl << "boundary p p f" << endl << "atom_style bond " << endl << "neighbor 0.3 bin" << endl << "neigh_modify every 1 delay 0 check yes" << endl << endl;
+
+//Creating simulation box
+
+outfile << "## Create Simulation Box, Atoms ##" << endl;
+
+outfile << "read_data	   P22CD40L.in" << endl << endl;
+
+outfile << "group vlp type 1" << endl << "group ligand type 2" << endl << "group wall type 3" << endl << endl;
+
+//Defining particle properties
+
+outfile << "## Defining Particle/Medium Properties ##" << endl;
+
+outfile << "mass	1	1	# reduced mass of vlp P22" << endl;
+
+outfile << "mass	2	0.002	# reduced mass of ligand " << endl;
+
+outfile << "mass	3	1	# mass of wall, irrelevant " << endl << endl;
+
+outfile << "## Ascribing Initial Velocities ##" << endl;
+
+outfile << "velocity	all	create	1.0	4928459	rot	yes	dist	gaussian	units	box" << endl << endl;
+
+outfile << "## Fixing Wall particles ##" << endl;
+
+outfile << "fix zwalls all wall/reflect zhi EDGE zlo EDGE" << endl << endl;
+
+//Interparticle potentials
+
+outfile << "## Ascribing interparticle potentials: ##" << endl << endl;	
+
+outfile << "pair_style      hybrid lj/expand        2.5     lj/cut 2.5" << endl;
+
+outfile << "pair_coeff      1       1       lj/cut           1      " << vlpDiameter << "	" << vlpDiameter*1.12246   << "       # epsilon, sigma, cut-off  V-V" << endl;
+
+outfile << "pair_coeff      1       2       lj/expand        1      " << sigmaHC << "     " << (vlpDiameter + ligandDiameter)/2 - sigmaHC << "	" << (vlpDiameter + ligandDiameter)/2 * 1.12246 << "  # epsilon, sigmaHC, delta_V-L, cut-off" << endl;
+
+outfile << "pair_coeff      2       2       lj/cut           1      " << ligandDiameter << "     " << ligandDiameter*1.12246 << "       # L-L" << endl;
+
+outfile << "pair_coeff      1       3       lj/expand        1      " << sigmaHC << "     " << (vlpDiameter + wallDiameter)/2 - sigmaHC << "	" << (vlpDiameter + wallDiameter)/2 * 1.12246 << "  # V-W" << endl;
+
+outfile << "pair_coeff      2       3       lj/cut       " << epsilon << "	   " << ligandDiameter << "	" << "2.5" << "  # L-W" << endl;
+
+outfile << "pair_coeff      3       3       lj/cut           0      0               # W-W" << endl << endl;
+
+outfile << "#pair_modify  shift   yes     # the additive e_LJ for repulsion-only" << endl << endl;
+
+//Defining bond properties
+
+outfile << "## Making bonds ##" << endl;
+
+outfile << "bond_style harmonic" << endl;
+
+outfile << "bond_coeff 1    1000.0  " << lengthType1 << "  # type, K, distance" << endl;
+
+outfile << "bond_coeff 2    1000.0  " << lengthType2 << endl;
+
+outfile << "bond_coeff 3    1000.0  " << lengthType3 << endl << endl;
+
+//Ensemble fixes
+
+outfile << "## Ensemble Fixes (+ for output) ##" << endl;
+
+outfile << "variable        myTStep equal   0.0001 # timestep where 1 MD step is " << sigma * sqrt( (massSI) / (epsilonSI) )  << " seconds" << endl;
+
+outfile << "timestep        ${myTStep}" << endl;
+
+outfile << "variable        myDStep equal   1000" << endl << endl;
+
+outfile << "fix     ens     vlp     nvt     temp    1.      1.      0.01" << endl;
+
+outfile << "fix     ens2    ligand  nvt     temp    1.      1.      0.01  # T_start, T_stop, T_damp=100*timestep" << endl;
+
+outfile << "fix_modify ens energy yes  # adds thermostat energy to potential" << endl;
+
+outfile << "fix_modify ens2 energy yes" << endl << endl;
+
+//Output dump
+
+outfile << "## Initial Image Dump ##" << endl;
+
+outfile << "dump mymovie all custom 100 ovitomovie.melt id type x y z" << endl << endl;
+
+outfile << "print \"OUTPUT COLUMNS: SIMULATION STEP NUMBER | TEMPERATURE | NP POTENTIAL ENERGY | SYSTEM VOLUME\" " << endl << endl;
+
+outfile << "thermo_style   custom  step    temp   etotal  ke      pe     #print info to file" << endl;
+
+outfile << "thermo  50000" << endl << endl;
+
+outfile << "run     1500000" << endl << endl;
+
+outfile << "## Defining Output Information ##" << endl;
+
+outfile << "dump    posD    all     custom  ${myDStep}      outfiles/dump.melt      id      type    x       y       z       # c_atomPot     c_atomKin" << endl << endl;
+
+outfile << " unfix   ens" << endl;
+
+outfile << "unfix   ens2" << endl;
+
+outfile << "undump  posD" << endl;
+
+outfile << "undump mymovie" << endl;
+
+outfile << "#shell          echo \"Lammps Simulation Ended\" " << endl;
+
+
+gsl_rng_free (r);
+
+return 0 ;
+
 }
 
 

@@ -1,0 +1,149 @@
+LAMMPS (15 May 2015)
+#Lammps input script for nanoparticle binding with multivalency #
+
+units lj
+boundary p p f
+atom_style bond
+neighbor 0.3 bin
+neigh_modify every 1 delay 0 check yes
+
+## Create Simulation Box, Atoms ##
+read_data	   P22CD40L.in
+  orthogonal box = (0 0 0) to (27.7439 27.7439 27.7439)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  1589 atoms
+  scanning bonds ...
+  5 = max bonds/atom
+  reading bonds ...
+  4500 bonds
+  60 = max # of 1-2 neighbors
+  240 = max # of 1-3 neighbors
+  1200 = max # of 1-4 neighbors
+  60 = max # of special neighbors
+
+group vlp type 1
+25 atoms in group vlp
+group ligand type 2
+1500 atoms in group ligand
+group wall type 3
+64 atoms in group wall
+
+## Defining Particle/Medium Properties ##
+mass	1	1	# reduced mass of vlp P22
+mass	2	0.002	# reduced mass of ligand
+mass	3	1	# mass of wall, irrelevant
+
+## Ascribing Initial Velocities ##
+velocity	all	create	1.0	4928459	rot	yes	dist	gaussian	units	box
+
+## Fixing Wall particles ##
+fix zwalls all wall/reflect zhi EDGE zlo EDGE
+
+## Ascribing interparticle potentials: ##
+
+pair_style      hybrid lj/expand        2.5     lj/cut 2.5
+pair_coeff      1       1       lj/cut           1      1	1.12246       # epsilon, sigma, cut-off  V-V
+pair_coeff      1       2       lj/expand        1      0.12     0.43	0.617353  # epsilon, sigma_hc, delta_V-L, cut-off
+pair_coeff      2       2       lj/cut           1      0.1     0.112246       # L-L
+pair_coeff      1       3       lj/expand        1      0.12     0.43	0.617353  # V-W
+pair_coeff      2       3       lj/cut       10	   0.1	2.5  # L-W
+pair_coeff      3       3       lj/cut           0      0               # W-W
+
+#pair_modify  shift   yes     # the additive e_LJ for repulsion-only
+
+## Making bonds ##
+bond_style harmonic
+bond_coeff 1    1000.0  0.55  # type, K, distance
+bond_coeff 2    1000.0  0.183333
+bond_coeff 3    1000.0  0.339919
+
+## Ensemble Fixes (+ for output) ##
+variable        myTStep equal   0.0001 # timestep where 1 MD step is 0.000182797 seconds
+timestep        ${myTStep}
+timestep        0.0001
+variable        myDStep equal   1000
+
+fix     ens     vlp     nvt     temp    1.      1.      0.01
+fix     ens2    ligand  nvt     temp    1.      1.      0.01  # T_start, T_stop, T_damp=100*timestep
+fix_modify ens energy yes  # adds thermostat energy to potential
+fix_modify ens2 energy yes
+
+## Initial Image Dump ##
+dump mymovie all custom 100 ovitomovie.melt id type x y z
+
+print "OUTPUT COLUMNS: SIMULATION STEP NUMBER | TEMPERATURE | NP POTENTIAL ENERGY | SYSTEM VOLUME"
+OUTPUT COLUMNS: SIMULATION STEP NUMBER | TEMPERATURE | NP POTENTIAL ENERGY | SYSTEM VOLUME
+
+thermo_style   custom  step    temp   etotal  ke      pe     #print info to file
+thermo  50000
+
+run     1500000
+Neighbor list info ...
+  3 neighbor list requests
+  update every 1 steps, delay 0 steps, check yes
+  master list distance cutoff = 2.8
+Memory usage per processor = 8.60412 Mbytes
+Step Temp TotEng KinEng PotEng 
+       0            1    1.4990596     1.499056 3.5742449e-06 
+   50000    0.9710632    1.5045071    1.4556781   0.04882899 
+  100000    1.0264675    1.5058986    1.5387323 -0.032833678 
+  150000   0.99652827    1.5057981    1.4938517  0.011946402 
+  200000    1.0058373    1.5064684    1.5078065 -0.0013381165 
+  250000   0.94578987    1.5069558     1.417792  0.089163821 
+  300000   0.99782551    1.5078767    1.4957963  0.012080359 
+  350000    1.0274423    1.5073013    1.5401936 -0.032892339 
+  400000   0.99633641    1.5069856    1.4935641  0.013421545 
+  450000    0.9778114    1.5082832     1.465794   0.04248916 
+  500000    0.9873936    1.5081207    1.4801583  0.027962415 
+  550000   0.95443812    1.5078227    1.4307562  0.077066453 
+  600000   0.98814011    1.5097972    1.4812774   0.02851984 
+  650000    1.0153995    1.5099196    1.5221407 -0.012221179 
+  700000   0.97995675    1.5112868    1.4690101  0.042276697 
+  750000    1.0104102    1.5156945    1.5146615 0.0010329459 
+  800000   0.99508774    1.5290195    1.4916922  0.037327235 
+  850000    1.0145421    1.5444999    1.5208554  0.023644551 
+  900000    1.0145988    1.5726601    1.5209404  0.051719658 
+  950000     1.014217    1.6003922     1.520368  0.080024183 
+ 1000000    1.0149074    1.6348044     1.521403   0.11340142 
+ 1050000   0.98287574    1.6791726    1.4733858   0.20578683 
+ 1100000    1.0129893    1.7443186    1.5185277   0.22579093 
+ 1150000    1.0032623      1.82671    1.5039463   0.32276368 
+ 1200000     1.002264    1.9770448    1.5024499   0.47459494 
+ 1250000   0.98978417    2.2258975    1.4837419   0.74215561 
+ 1300000    1.0405844    2.2966319    1.5598943   0.73673754 
+ 1350000   0.96086556    2.5179853    1.4403913     1.077594 
+ 1400000   0.99458317    2.5535297    1.4909359    1.0625938 
+ 1450000    1.0349372    2.5816786    1.5514289    1.0302497 
+ 1500000    1.0529493    2.6080802      1.57843    1.0296502 
+Loop time of 1592.02 on 1 procs for 1500000 steps with 1589 atoms
+
+Pair  time (%) = 100.639 (6.32145)
+Bond  time (%) = 704.548 (44.255)
+Neigh time (%) = 287.666 (18.0693)
+Comm  time (%) = 46.1868 (2.90115)
+Outpt time (%) = 59.6014 (3.74376)
+Other time (%) = 393.377 (24.7094)
+
+Nlocal:    1589 ave 1589 max 1589 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    774 ave 774 max 774 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    325 ave 325 max 325 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 325
+Ave neighs/atom = 0.204531
+Ave special neighs/atom = 57.5834
+Neighbor list builds = 87038
+Dangerous builds = 0
+
+## Defining Output Information ##
+dump    posD    all     custom  ${myDStep}      outfiles/dump.melt      id      type    x       y       z       # c_atomPot     c_atomKin
+dump    posD    all     custom  1000      outfiles/dump.melt      id      type    x       y       z       
+
+ unfix   ens
+unfix   ens2
+undump  posD
+undump mymovie
+#shell          echo "Lammps Simulation Ended"
