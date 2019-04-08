@@ -8,15 +8,17 @@
 #include <vector>
 #include <gsl/gsl_rng.h>
 #include <time.h>
+#include <boost/program_options.hpp>
 
 
 
 using namespace std;
+using namespace boost::program_options;
 
 
 
 
-int main() {
+int main(int argc, char** argv) {
    
    // Set up the ligand xyz coordinates in a vector array
    
@@ -41,20 +43,31 @@ int main() {
    
    // Get important parameters from the user
    
-   double epsilon, wallSpacing, concentration;
+   double epsilon;
+   double wallSpacing;
+   double concentration;
    int numberComplexes;
+   bool verbose;
    
-   cout << "What is the [ligand - Virus] complex concentration (nM)?" << endl;
-   cin >> concentration;
+   options_description desc("Usage:\nrandom_mesh <options>");
+   desc.add_options()
+   ("help,h", "print usage message")
+   ("lennard jones well depth,E", value<double>(&epsilon)->default_value(1), "Binding strength of the ligand-recptor interaction (KbT)")
+   ("[ligand - Virus] complex concentration,C", value<double>(&concentration)->default_value(9),
+    "[ligand - Virus] complex concentration (nM)") // box size adjusteded for nanomolar conc.
+   ("receptor spacing,w", value<double>(&wallSpacing)->default_value(100), "receptor spacing (nm)")
+   ("number of vlp-ligand complexes,S", value<int>(&numberComplexes)->default_value(108),
+    "number of vlp-ligand complexes")
+   ("verbose,V", value<bool>(&verbose)->default_value(true), "verbose true: provides detailed output");
    
-   cout << "What is the receptor spacing (nm)?" << endl;
-   cin >> wallSpacing;
+   variables_map vm;
+   store(parse_command_line(argc, argv, desc), vm);
+   notify(vm);
+   if (vm.count("help")) {
+      std::cout << desc << "\n";
+      return 0;
+   }
    
-   cout << "What is the binding strength of the ligand-receptor interaction (KbT)?" << endl;
-   cin >> epsilon;
-   
-   cout << "How many vlp-ligand complexes?" << endl;
-   cin >> numberComplexes;
    
    //add options for ligand - virus ratio, properties of ligand / vlp, free ligand in solution
    

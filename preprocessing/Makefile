@@ -6,7 +6,7 @@ OBJ = main.o
 
 CC = g++ -O3 -g -Wall
 
-LFLAG = -lgsl -lgslcblas
+LFLAG = -lgsl -lgslcblas -lm -lboost_program_options
 
 CFLAG = -c
 
