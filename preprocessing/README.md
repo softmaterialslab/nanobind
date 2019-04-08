@@ -1,10 +1,22 @@
 # Preprocessing
 
-This takes ovitomovie.melt, generated from lammps, and generates ovitomovie.melt.processed
+This takes ligandBonds.coords and ligandCoordinates.coords and generates P22CD40L.in and lammps_script.in
 
-### ligand_xyz.coords
+### ligandCoordinates.coords
 
-This is a z-axis histogram of the average positions of vlp's at equilibrium
+This is a user generated file of all xyz coordinates of a ligand complex around P22 centered at (0,0,0)
+
+### ligandBonds.coords
+
+This is a user generated file of bonds between the ligands and vlp
+
+### P22CD40L.in
+
+This is the input file containing all atom and bond information for the lammps script
+
+### lammps_script.in
+
+This is the lammps script that will be run
 
 ## Running the postprocessor
 
@@ -15,7 +27,7 @@ This is a z-axis histogram of the average positions of vlp's at equilibrium
 '''make'''
 
 * Run the project:
-''' ./generate_histogram'''
+''' ./generate_lammps_script'''
 
 * If you want to clean everything and create a new build, use:
 '''make clean'''
