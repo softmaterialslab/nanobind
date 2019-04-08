@@ -6,7 +6,8 @@
 #include "vector3d.h"
 #include <math.h>
 #include <vector>
-#include<gsl/gsl_rng.h>
+#include <gsl/gsl_rng.h>
+#include <time.h>
 
 
 
@@ -111,28 +112,35 @@ int main() {
   
   double atom_type, x_vlp, y_vlp, z_vlp;
   double index = 0;
+  vector<VECTOR3D> vlp_xyz;
+  gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);                    //setting up random seed
+  //unsigned long int Seed = 23410982;
+  gsl_rng_set(r, time(NULL));		//seed with time
+  VECTOR3D dist;
   
   
     
    ////////////////////////////...To start on a lattice, use these lines.../////////////////////////////////////////
   
-  unsigned int num_fill = int(ceil(pow((double(num_particles)), 1.0 / 3.0)));
-  
+//   unsigned int num_fill = int(ceil(pow((double(num_particles)), 1.0 / 3.0)));
+//   
+//   
 //     for (unsigned int i = 0; i < num_fill; i++) {
 //       for (unsigned int j = 0; j < num_fill; j++) {
 // 	for (unsigned int k = 0; k < num_fill; k++) {
-// 	  index += 1;
-// 	  if ( (i+j+k) < num_particles ) {
+// 	  if ( vlp_xyz.size() < num_particles ) {
+// 	    index += 1;
 // 	    x_vlp = (((double)i*box_x*(1/(double)num_fill)));
 // 	    y_vlp = (((double)j*box_x*(1/(double)num_fill)));
-// 	    z_vlp = (((double)k*(box_x - (vlp_diameter*2.5/2))*(1/(double)num_fill))) + (vlp_diameter*2.5);
-// 	    datafile << index << "  " << "1" << "  " << x_vlp << "  " << y_vlp << "  " << z_vlp << "  " << endl;
+// 	    z_vlp = (((double)k*(box_x - (vlp_diameter*2.5/2)-(ligand_diameter))*(1/(double)num_fill))) + (vlp_diameter*2.5)+(ligand_diameter);
+// 	    datafile << index << " 1 " << "1" << "  " << x_vlp << "  " << y_vlp << "  " << z_vlp << endl;
+// 	    vlp_xyz.push_back(VECTOR3D(x_vlp, y_vlp, x_vlp));
 // 	    for (unsigned int m = 0; m < ligand_xyz.size(); m++){
 // 	      index += 1;
 // 	      x = x_vlp + ligand_xyz[m].x;
 // 	      y = y_vlp + ligand_xyz[m].y;
 // 	      z = z_vlp + ligand_xyz[m].z;
-// 	      datafile << index << "  " << "2" << "  " << x << "  " << y << "  " << z << "  " << endl;
+// 	      datafile << index << " 1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
 // 	    }
 // 	  }
 // 	}
@@ -141,12 +149,7 @@ int main() {
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     
   
-  ///////////////////////////////...To give vlp random positions use these.../////////////////////////////
-  vector<VECTOR3D> vlp_xyz;
-  gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);                    //setting up random seed for brownian
-  unsigned long int Seed = 23410981;
-  gsl_rng_set(r, Seed);
-  VECTOR3D dist;
+  ///////////////////////////////...To give vlp random positions use these...////////////////////////////////
   bool add;
   
   while (vlp_xyz.size() < num_particles) {
@@ -156,7 +159,7 @@ int main() {
     z_vlp = (gsl_rng_uniform(r)) * box_x;
     
     if (z_vlp < 2.5) add = false; // if too close to the cell wall, reject the point
-    if (z_vlp > (box_x - (vlp_diameter/2)) ) add = false; // if overlaps with the upper z boundary reject
+    if (z_vlp > (box_x - (vlp_diameter + ligand_diameter) ) ) add = false; // if overlaps with the upper z boundary reject
     
     
     if (vlp_xyz.size() == 0) {		//if no vlps have been added yet, add it
@@ -170,21 +173,20 @@ int main() {
 	z = z_vlp + ligand_xyz[m].z;
 	datafile << index << " 1 " << "2" << " " << x << " " << y << " " << z << " " << endl;
       }
-    }
-    
-    
+      add = false;
+    } 
     
     for (int j = 0; j < vlp_xyz.size(); j++){ //make sure they don't overlap with other particles
       dist.x = vlp_xyz[j].x - x_vlp;
       dist.y = vlp_xyz[j].y - y_vlp;
       dist.z = vlp_xyz[j].z - z_vlp;
-      if (dist.x>box_x/2) dist.x -= box_x; //account for periodic bounaries in x & y  
+      if (dist.x>box_x/2) dist.x -= box_x; //account for periodic boundaries in x & y  
       if (dist.x<-box_x/2) dist.x += box_x;
       if (dist.y>box_x/2) dist.y -= box_x;
       if (dist.y<-box_x/2) dist.y += box_x;
-//       if (dist.z>box_x/2) dist.z -= box_x; 	// z is not periodic
-//       if (dist.z<-box_x/2) dist.z += box_x;
-   //   cout << "distance is " << dist.GetMagnitude() << " btw " << j << " ( " << vlp_xyz[j].x << " , " << vlp_xyz[j].y << " , " << vlp_xyz[j].z << " ) " << " and " << index/61 << " ( " << x_vlp << " , " << y_vlp << " , " << z_vlp << " ) " << endl;
+      //       if (dist.z>box_x/2) dist.z -= box_x; 	// z is not periodic
+      //       if (dist.z<-box_x/2) dist.z += box_x;
+      //   cout << "distance is " << dist.GetMagnitude() << " btw " << j << " ( " << vlp_xyz[j].x << " , " << vlp_xyz[j].y << " , " << vlp_xyz[j].z << " ) " << " and " << index/61 << " ( " << x_vlp << " , " << y_vlp << " , " << z_vlp << " ) " << endl;
       
       if (dist.GetMagnitude() < 2.5) {  //flag it if it intersects with anything
 	//cout << "too close!" << endl;
@@ -193,21 +195,22 @@ int main() {
     }  
   }
   
+  
   if (add == true){		//if it doesn't intersect, add it and its ligands to the list
     vlp_xyz.push_back(VECTOR3D(x_vlp, y_vlp, z_vlp));
     index += 1;
-    datafile << index << "  1 " << "1" << "  " << x_vlp << "  " << y_vlp << "  " << z_vlp << "  " << endl;
+    datafile << index << "  1 " << "1" << "  " << x_vlp << "  " << y_vlp << "  " << z_vlp << endl;
     for (unsigned int m = 0; m < ligand_xyz.size(); m++){
       index += 1;
       x = x_vlp + ligand_xyz[m].x;
       y = y_vlp + ligand_xyz[m].y;
       z = z_vlp + ligand_xyz[m].z;
-      datafile << index << "  1 " << "2" << "  " << x << "  " << y << "  " << z << "  " << endl;
+      datafile << index << "  1 " << "2" << "  " << x << "  " << y << "  " << z << endl;
     }
   } //else cout << "rejected!" << endl;
   
 }
-    
+
     
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
     
