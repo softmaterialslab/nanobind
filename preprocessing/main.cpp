@@ -298,9 +298,9 @@ int main() {
   
   outfile << "## Defining Particle/Medium Properties ##" << endl;
   
-  outfile << "mass	1	590	# reduced mass of vlp P22" << endl;
+  outfile << "mass	1	1	# reduced mass of vlp P22" << endl;
   
-  outfile << "mass	2	1	# reduced mass of ligand " << endl;
+  outfile << "mass	2	0.002	# reduced mass of ligand " << endl;
   
   outfile << "mass	3	1	# mass of wall, irrelevant " << endl << endl;
   
@@ -348,15 +348,15 @@ int main() {
   
   outfile << "## Ensemble Fixes (+ for output) ##" << endl;
   
-  outfile << "variable        myTStep equal   0.001 # timestep where 1 MD step is " << sigma * sqrt( (mass_SI / 590) / (epsilon_SI) )  << " seconds" << endl;
+  outfile << "variable        myTStep equal   0.0001 # timestep where 1 MD step is " << sigma * sqrt( (mass_SI) / (epsilon_SI) )  << " seconds" << endl;
   
   outfile << "timestep        ${myTStep}" << endl;
   
   outfile << "variable        myDStep equal   1000" << endl << endl;
   
-  outfile << "fix     ens     vlp     nvt     temp    1.      1.      0.1" << endl;
+  outfile << "fix     ens     vlp     nvt     temp    1.      1.      0.01" << endl;
   
-  outfile << "fix     ens2    ligand  nvt     temp    1.      1.      0.1  # T_start, T_stop, T_damp=100*timestep" << endl;
+  outfile << "fix     ens2    ligand  nvt     temp    1.      1.      0.01  # T_start, T_stop, T_damp=100*timestep" << endl;
   
   outfile << "fix_modify ens energy yes  # adds thermostat energy to potential" << endl;
   
