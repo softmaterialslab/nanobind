@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
    double wallSpacing;
    double concentration;
    int numberComplexes;
+   double timesteps;
    bool verbose;
    
    options_description desc("Usage:\nrandom_mesh <options>");
@@ -56,8 +57,8 @@ int main(int argc, char** argv) {
    ("[ligand - Virus] complex concentration,C", value<double>(&concentration)->default_value(9),
     "[ligand - Virus] complex concentration (nM)") // box size adjusteded for nanomolar conc.
    ("receptor spacing,w", value<double>(&wallSpacing)->default_value(100), "receptor spacing (nm)")
-   ("number of vlp-ligand complexes,S", value<int>(&numberComplexes)->default_value(108),
-    "number of vlp-ligand complexes")
+   ("number of vlp-ligand complexes,S", value<int>(&numberComplexes)->default_value(108), "number of vlp-ligand complexes")
+   ("simulation time,T", value<double>(&timesteps)->default_value(275), "simulation time (milliseconds)")
    ("verbose,V", value<bool>(&verbose)->default_value(true), "verbose true: provides detailed output");
    
    variables_map vm;
@@ -100,10 +101,15 @@ int main(int argc, char** argv) {
    
    double sigma = 60e-9; //sigma value currently used, diameter of P22
    double sigmaHC = 0.12; // sigma hc in reduced units
-   double massSI = 3.819E-14; // mass of P22 in kg
+   double massSI = 3.819E-20; // mass of P22 in kg
    double epsilonSI = (1.38E-23) * (298.15); // epsilon in J
    boxLength = boxLength / sigma; // now in reduced units
    wallSpacing = boxLength / wallNumberX; // now in reduced units
+   
+   //convert simulation time to reduced units
+   double tau = sigma * sqrt(massSI/epsilonSI); //1 MD timestep in seconds
+   timesteps = ceil(timesteps*1e-3/tau);
+   cout << "lammps will run for " << timesteps << " MD timesteps" << endl;
    
    if (boxLength < (10 * vlpDiameter))
    {
@@ -416,7 +422,9 @@ outfile << "thermo_style   custom  step    temp   etotal  ke      pe     #print 
 
 outfile << "thermo  50000" << endl << endl;
 
-outfile << "run     1500000" << endl << endl;
+outfile << fixed;
+
+outfile << "run     " << int(timesteps) << endl << endl;
 
 outfile << "## Defining Output Information ##" << endl;
 
