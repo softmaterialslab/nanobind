@@ -22,13 +22,11 @@ int main() {
    double wallDiameter = 0.1; //reduced units
    string fileName = "ovitomovie.melt" ; //name of ovito dump file from lammps
    
-   cout << "How many vlp-ligand complexes?" << endl;
+   cout << "How many vlp-ligand complexes?" << endl; //change to import from preprocessor
    int numberComplexes;
    cin >> numberComplexes;
    
-   cout << "Which timestep marks equilibrium?" << endl;
-   int equilibrium;
-   cin >> equilibrium;
+   int equilibrium = 0; //for now, print data from all timesteps (so set equilibrium to 0)
    
    ifstream crds;                                      //open coordinates file
    crds.open(fileName.c_str());
