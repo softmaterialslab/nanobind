@@ -22,10 +22,6 @@ int main() {
    double wallDiameter = 0.1; //reduced units
    string fileName = "ovitomovie.melt" ; //name of ovito dump file from lammps
    
-   cout << "How many vlp-ligand complexes?" << endl; //change to import from preprocessor
-   int numberComplexes;
-   cin >> numberComplexes;
-   
    int equilibrium = 0; //for now, print data from all timesteps (so set equilibrium to 0)
    
    ifstream crds;                                      //open coordinates file
@@ -71,8 +67,6 @@ int main() {
             if (type == 2 ) ligandXYZ.push_back(VECTOR3D(x,y,z)); //if it is a ligand
             if (type == 3 ) wallXYZ.push_back(VECTOR3D(x,y,z)); //if it is a wall mesh particle
          }
-         
-         if (vlpXYZ.size() != numberComplexes) cout << "ERROR! number of complexes entered does not match datafile!" << endl;
          
       } else {
          double vlpIndex = 0;
@@ -120,12 +114,12 @@ int main() {
                   //       if (dist.z<-boxLength/2) dist.z += boxLength;
                   if (dist.GetMagnitude() < ligandDiameter*2.5)
                   {
-                     bondedWall += 1;
+                     bondedWall += 1;           //count receptor as ligand bound
                      break;
                   }
                }
             }
-            processedData << i << "  " << bondedWall << "  " << wallXYZ.size() << endl;
+            processedData << i << "  " << bondedWall << "  " << wallXYZ.size() << endl; //print how many receptor are bound out of total for all timesteps
          } //end if
       } // end else; after first timestep
       
