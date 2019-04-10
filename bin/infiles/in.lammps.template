@@ -56,21 +56,23 @@ fix_modify ens2 energy yes
 dump mymovie all custom 1000 outfiles/ovito_movie.melt id type x y z
 
 ## Image Dump ##
-dump	myimages virus image 10000 outfiles/image.*.jpg type type &
-               	axes no 0.8 0.02 view 60 -30
-dump_modify    	myimages pad 3
-dump_modify	myimages boxcolor black backcolor white
+dump	myimages all image 10000 outfiles/image.*.jpg type type size 1024 1024 &
+               	axes no 0.8 0.02 view 60 -30         
+dump_modify myimages pad 3
+dump_modify myimages boxcolor black backcolor white
+dump_modify myimages adiam 1 1
+dump_modify myimages adiam 2 0.1
+dump_modify myimages adiam 3 0.1
 
 print "OUTPUT COLUMNS: SIMULATION STEP NUMBER | TEMPERATURE | NP POTENTIAL ENERGY | SYSTEM VOLUME" 
 
 thermo_style   custom  step    temp   etotal  ke      pe     #print info to file
-thermo  50000
+thermo  10000
 
 run     USERINPUT_TIME #1504401
 
 unfix   ens
 unfix   ens2
-undump  posD
 undump mymovie
 undump myimages
 #shell          echo "Lammps Simulation Ended" 
