@@ -16,6 +16,8 @@ S=108
 W=100
 T=275
 NODESIZE=4
+MPI_EXE=mpirun
+LAMMPS_EXE=lmp_g++
 
 all:
 	@echo "Starting build of the project";
@@ -59,13 +61,13 @@ local-run-parallel:
 	@echo "Running the preprocessor to create lammps script."
 	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) W=$(W) T=$(T)
 	@echo "Running the preprocessor is over."
-	+$(MAKE) -C $(BIN) run-local-parallel NODESIZE=$(NODESIZE)
+	+$(MAKE) -C $(BIN) run-local-parallel NODESIZE=$(NODESIZE) MPI_EXE=$(MPI_EXE) LAMMPS_EXE=$(LAMMPS_EXE)
 
 local-run:
 	@echo "Running the preprocessor to create lammps script."
 	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) W=$(W) T=$(T)
 	@echo "Running the preprocessor is over."
-	+$(MAKE) -C $(BIN) run-local-serial 
+	+$(MAKE) -C $(BIN) run-local-serial LAMMPS_EXE=$(LAMMPS_EXE)
 
 clean:
 	rm -f $(PRE)/*.o

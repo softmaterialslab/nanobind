@@ -8,6 +8,8 @@ S=108
 w=100
 T=275
 NODESIZE=4
+MPI_EXE=mpirun
+LAMMPS_EXE=lmp_g++
 
 run-preprocessor:
 	./preprocessor -E -$(E) -C $(C) -S $(S) -w $(w) -T $(T)
@@ -17,8 +19,8 @@ submit:
 	qsub $(JOBSCR)
 
 run-local-parallel:
-	time mpirun -n $(NODESIZE) lmp_g++ < in.lammps
+	time $(MPI_EXE) -n $(NODESIZE) $(LAMMPS_EXE) < in.lammps
 
 run-local-serial:
-	time lmp_g++ < in.lammps
+	time $(LAMMPS_EXE) < in.lammps
 
