@@ -5,12 +5,12 @@ TESTSCR = test.pbs
 E=1 
 C=9 
 S=108 
-W=100
+w=100
 T=275
 NODESIZE=4
 
 run-preprocessor:
-	./preprocessor -E -$(E) -C $(C) -S $(S) -W $(W) -T $(T)
+	./preprocessor -E -$(E) -C $(C) -S $(S) -w $(w) -T $(T)
 
 submit: 
 	@echo "Launching the job";

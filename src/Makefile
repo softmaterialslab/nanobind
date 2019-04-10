@@ -13,7 +13,7 @@ SCRIPT = scripts
 E=1 
 C=9 
 S=108 
-W=100
+w=100
 T=275
 NODESIZE=4
 

@@ -13,7 +13,7 @@ SCRIPT = scripts
 E=1 
 C=9 
 S=108 
-W=100
+w=100
 T=275
 NODESIZE=4
 
@@ -49,7 +49,7 @@ create-dirs:
 
 cluster-submit:
 	@echo "Running the preprocessor to create lammps script."
-	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) W=$(W) T=$(T)
+	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) w=$(w) T=$(T)
 	@echo "Running the preprocessor is over."
 	@echo "Installing jobscript into $(BIN) directory"
 	cp -f $(SCRIPT)/$(JOBSCR) $(BIN)
@@ -57,13 +57,13 @@ cluster-submit:
 
 local-run-parallel:
 	@echo "Running the preprocessor to create lammps script."
-	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) W=$(W) T=$(T)
+	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) w=$(w) T=$(T)
 	@echo "Running the preprocessor is over."
 	+$(MAKE) -C $(BIN) run-local-parallel NODESIZE=$(NODESIZE)
 
 local-run:
 	@echo "Running the preprocessor to create lammps script."
-	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) W=$(W) T=$(T)
+	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) w=$(w) T=$(T)
 	@echo "Running the preprocessor is over."
 	+$(MAKE) -C $(BIN) run-local-serial 
 
