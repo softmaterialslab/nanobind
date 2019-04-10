@@ -1,0 +1,77 @@
+#Lammps input script for nanoparticle binding with multivalency #
+
+units lj
+boundary p p f
+atom_style bond 
+neighbor 0.3 bin
+neigh_modify every 1 delay 0 check yes
+
+## Create Simulation Box, Atoms ##
+read_data	   USERINPUT_INIT_FILENAME #P22CD40L.in
+
+group vlp type 1
+group ligand type 2
+group wall type 3
+
+## Defining Particle/Medium Properties ##
+mass	1	1	# reduced mass of vlp P22
+mass	2	0.002	# reduced mass of ligand 
+mass	3	1	# mass of wall, irrelevant 
+
+## Ascribing Initial Velocities ##
+velocity	all	create	1.0	4928459	rot	yes	dist	gaussian	units	box
+
+## Fixing Wall particles ##
+fix zwalls all wall/reflect zhi EDGE zlo EDGE
+
+## Ascribing interparticle potentials: ##
+
+pair_style      hybrid lj/expand        2.5     lj/cut 2.5
+pair_coeff      1       1       lj/cut           1      1	1.12246       # epsilon, sigma, cut-off  V-V
+pair_coeff      1       2       lj/expand        1      0.12     0.43	0.617353  # epsilon, sigmaHC, delta_V-L, cut-off
+pair_coeff      2       2       lj/cut           1      0.1     0.112246       # L-L
+pair_coeff      1       3       lj/expand        1      0.12     0.43	0.617353  # V-W
+pair_coeff      2       3       lj/cut       USERINPUT_E	   0.1	2.5  # L-W
+pair_coeff      3       3       lj/cut           0      0               # W-W
+
+#pair_modify  shift   yes     # the additive e_LJ for repulsion-only
+
+## Making bonds ##
+bond_style harmonic
+bond_coeff 1    1000.0  0.55  # type, K, distance
+bond_coeff 2    1000.0  0.183333
+bond_coeff 3    1000.0  0.339919
+
+## Ensemble Fixes (+ for output) ##
+variable        myTStep equal   0.00005 # timestep where 1 MD step is 1.82797e-07 seconds
+timestep        ${myTStep}
+variable        myDStep equal   1000
+
+fix     ens     vlp     nvt     temp    1.      1.      0.005
+fix     ens2    ligand  nvt     temp    1.      1.      0.005  # T_start, T_stop, T_damp=100*timestep
+fix_modify ens energy yes  # adds thermostat energy to potential
+fix_modify ens2 energy yes
+
+## Movie Dump ##
+dump mymovie all custom 1000 outfiles/ovito_movie.melt id type x y z
+
+## Image Dump ##
+dump	myimages virus image 10000 outfiles/image.*.jpg type type &
+               	axes no 0.8 0.02 view 60 -30
+dump_modify    	myimages pad 3
+dump_modify	myimages boxcolor black backcolor white
+
+print "OUTPUT COLUMNS: SIMULATION STEP NUMBER | TEMPERATURE | NP POTENTIAL ENERGY | SYSTEM VOLUME" 
+
+thermo_style   custom  step    temp   etotal  ke      pe     #print info to file
+thermo  50000
+
+run     USERINPUT_TIME #1504401
+
+unfix   ens
+unfix   ens2
+undump  posD
+undump mymovie
+undump myimages
+#shell          echo "Lammps Simulation Ended" 
+#shell		./postprocessor
