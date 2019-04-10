@@ -31,7 +31,9 @@ For further details please refer to the [documentation](https://softmaterialslab
 * Load necessary modules: ```module load gsl && module load mpi/openmpi-x86_64 && module load boost/1_67_0```
 * Also make sure to export OMP_NUM_THREADS environment variable with maximum threads available in your CPU: ```export OMP_NUM_THREADS=16```
 * Install the project: ```make local-install```
-* Submit a job: ```make local-run-parallel```
+* Run the simulation: ```make local-run-parallel LAMMPS_EXE=lmp_g++```
+* Run the simulation in parellel mode: ```make local-run-parallel LAMMPS_EXE=lmp_g++ MPI_EXE=mpirun NODESIZE=4```
 * To change the default parameters of E (ligand-receptor binding strength, KbT), S (number of virus-ligand complexes), T (simulation runtime, milliseconds) or C (concentration of virus-ligand, nanomolar); ```make local-run-parallel E=5 S=125 T=100 C=0.3```
 * All outputs from the simulation will be stored in the bin folder when the simulation is completed.
 * If you want to clean everything and create a new build, use: ```make clean```
+* If you want to clean data, use: ```make dataclean```
