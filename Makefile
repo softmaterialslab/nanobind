@@ -83,5 +83,6 @@ dataclean:
 	rm -f $(BIN)/*.log
 	rm -f $(BIN)/*.pbs
 	rm -f $(BIN)/*.in
+	rm -f $(BIN)/infiles/*.in
 
 .PHONY: all clean
