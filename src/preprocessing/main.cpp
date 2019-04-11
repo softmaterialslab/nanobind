@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     string initFileNameText = "USERINPUT_INIT_FILENAME";
     string mpiText = "NODESIZE";
 
-    string initFile = "P22CD40L.in";
+    string initFile = "infiles/P22CD40L.in";
 
     // Set up the ligand xyz coordinates in a vector array
 
