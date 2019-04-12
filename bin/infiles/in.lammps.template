@@ -62,7 +62,7 @@ dump_modify myimages pad 3
 dump_modify myimages boxcolor black backcolor white
 dump_modify myimages adiam 1 1
 dump_modify myimages adiam 2 0.1
-dump_modify myimages adiam 3 0.1
+dump_modify myimages adiam 3 0.3
 
 print "OUTPUT COLUMNS: SIMULATION STEP NUMBER | TEMPERATURE | NP POTENTIAL ENERGY | SYSTEM VOLUME" 
 
