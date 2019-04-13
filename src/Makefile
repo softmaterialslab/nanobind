@@ -32,7 +32,7 @@ endif
 	@echo "Ending the build of the project";
 
 
-nanoHUB-install: create-dirs
+install: create-dirs
 	make CCF=nanoHUB all
 
 create-dirs:
