@@ -38,9 +38,9 @@ pair_coeff      3       3       lj/cut           0      0               # W-W
 
 ## Making bonds ##
 bond_style harmonic
-bond_coeff 1    1000.0  0.55  # type, K, distance
-bond_coeff 2    1000.0  0.183333
-bond_coeff 3    1000.0  0.339919
+bond_coeff 1    500.0  0.55  # type, K, distance
+bond_coeff 2    500.0  0.183333
+bond_coeff 3    500.0  0.339919
 
 ## Ensemble Fixes (+ for output) ##
 variable        myTStep equal   0.00005 # timestep where 1 MD step is 1.82797e-07 seconds
