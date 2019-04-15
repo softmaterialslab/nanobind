@@ -45,10 +45,8 @@ create-dirs:
 clean:
 	rm -f $(PRE)/*.o
 	rm -f $(PRE)/$(PROGPRE)
-	rm -f $(BIN)/$(PROGPRE)
 	rm -f $(POST)/*.o
 	rm -f $(POST)/$(PROGPOST)
-	rm -f $(BIN)/$(PROGPOST)
 
 dataclean:
 	rm -f $(BIN)/outfiles/*
@@ -56,5 +54,9 @@ dataclean:
 	rm -f $(BIN)/*.lammps
 	rm -f $(BIN)/*.log
 	rm -f $(BIN)/*.pbs
+	
+distclean: clean
+	rm -f $(BIN)/$(PROGPRE)
+	rm -f $(BIN)/$(PROGPOST)
 
-.PHONY: all clean
+.PHONY: all clean distclean
