@@ -5,6 +5,7 @@ boundary p p f
 atom_style bond 
 neighbor 0.3 bin
 neigh_modify every 1 delay 0 check yes
+neigh_modify exclude type 3 3
 
 ## Create Simulation Box, Atoms ##
 read_data	   USERINPUT_INIT_FILENAME #P22CD40L.in
@@ -37,10 +38,10 @@ pair_coeff      3       3       lj/cut           0      0               # W-W
 #pair_modify  shift   yes     # the additive e_LJ for repulsion-only
 
 ## Making bonds ##
-bond_style harmonic
-bond_coeff 1    500.0  0.55  # type, K, distance
-bond_coeff 2    500.0  0.183333
-bond_coeff 3    500.0  0.339919
+#bond_style harmonic
+#bond_coeff 1    500.0  0.55  # type, K, distance
+#bond_coeff 2    500.0  0.183333
+#bond_coeff 3    500.0  0.339919
 
 ## Ensemble Fixes (+ for output) ##
 variable        myTStep equal   0.00005 # timestep where 1 MD step is 1.82797e-07 seconds

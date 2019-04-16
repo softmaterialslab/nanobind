@@ -12,7 +12,7 @@ MPI_EXE=mpirun
 LAMMPS_EXE=lmp_g++
 
 run-preprocessor:
-	./preprocessor -E -$(E) -C $(C) -S $(S) -w $(w) -T $(T)
+	./preprocessor -E $(E) -C $(C) -S $(S) -w $(w) -T $(T)
 
 submit: 
 	@echo "Launching the job";
