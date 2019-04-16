@@ -32,16 +32,16 @@ pair_coeff      1       1       lj/cut           1      1	1.12246       # epsilo
 pair_coeff      1       2       lj/expand        1      0.12     0.43	0.617353  # epsilon, sigmaHC, delta_V-L, cut-off
 pair_coeff      2       2       lj/cut           1      0.1     0.112246       # L-L
 pair_coeff      1       3       lj/expand        1      0.12     0.43	0.617353  # V-W
-pair_coeff      2       3       lj/cut       USERINPUT_E	   0.1	2.5  # L-W
+pair_coeff      2       3       lj/cut       USERINPUT_E	   0.1	.25  # L-W
 pair_coeff      3       3       lj/cut           0      0               # W-W
 
 #pair_modify  shift   yes     # the additive e_LJ for repulsion-only
 
 ## Making bonds ##
-#bond_style harmonic
-#bond_coeff 1    500.0  0.55  # type, K, distance
-#bond_coeff 2    500.0  0.183333
-#bond_coeff 3    500.0  0.339919
+bond_style harmonic
+bond_coeff 1    500.0  0.55  # type, K, distance
+bond_coeff 2    500.0  0.183333
+bond_coeff 3    500.0  0.339919
 
 ## Ensemble Fixes (+ for output) ##
 variable        myTStep equal   0.00005 # timestep where 1 MD step is 1.82797e-07 seconds
