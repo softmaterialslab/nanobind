@@ -37,3 +37,7 @@ For further details please refer to the [documentation](https://softmaterialslab
 * All outputs from the simulation will be stored in the bin folder when the simulation is completed.
 * If you want to clean everything and create a new build, use: ```make clean```
 * If you want to clean data, use: ```make dataclean```
+
+### NanoHUB app page:
+* https://nanohub.org/tools/nanobind/
+
