@@ -26,7 +26,7 @@ jobs:
       script:
         - sed -i 's/%use/#%use/' bin/nanobind-frontend.ipynb
         - sed -i 's/import hublib.use/#import hublib.use/' bin/nanobind-frontend.ipynb
-        - sed -i 's/0000/000/' bin/infiles/in.lammps.template
+          #- sed -i 's/0000/000/' bin/infiles/in.lammps.template
         - sed -i 's/lmp_g++/lmp/' bin/Makefile
         - make all
         - cd bin && ./test.sh
